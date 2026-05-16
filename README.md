@@ -8,10 +8,6 @@ An interactive, modern image gallery web application featuring a cinematic light
 
 ![Project Demo]( https://chaithanya8861.github.io/CodeAlpha_ImgageGallery/)
 
-## 🌟 Live Demo
-
-Experience the gallery live right here: **[https://chaithanya8861.github.io/CodeAlpha_ImgageGallery/]( https://chaithanya8861.github.io/CodeAlpha_ImgageGallery/)**
-
 ## ✨ Key Features
 
 - **🎨 Dynamic Category Filtering** – Seamlessly browse images by categories: Nature, Urban, Abstract, and Portrait.
