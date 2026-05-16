@@ -1,0 +1,557 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>Aether Gallery | Cinematic Lightbox & Filters</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: linear-gradient(135deg, #0b1120 0%, #111827 100%);
+            font-family: 'Segoe UI', 'Inter', system-ui, -apple-system, 'Poppins', sans-serif;
+            padding: 2rem 1.5rem;
+            color: #f1f5f9;
+            min-height: 100vh;
+        }
+
+        /* gallery container */
+        .gallery-container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        /* header & filter bar */
+        .gallery-header {
+            text-align: center;
+            margin-bottom: 2.5rem;
+        }
+
+        .gallery-header h1 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            background: linear-gradient(130deg, #e2e8f0, #a5f3fc);
+            background-clip: text;
+            -webkit-background-clip: text;
+            color: transparent;
+            letter-spacing: -0.5px;
+            margin-bottom: 0.5rem;
+        }
+
+        .sub {
+            opacity: 0.8;
+            font-weight: 400;
+            margin-bottom: 1.8rem;
+        }
+
+        /* category filter pills */
+        .filter-bar {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 0.8rem;
+            margin-bottom: 2.8rem;
+        }
+
+        .filter-btn {
+            background: rgba(30, 41, 59, 0.7);
+            backdrop-filter: blur(4px);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            padding: 0.6rem 1.6rem;
+            border-radius: 60px;
+            font-weight: 600;
+            font-size: 0.9rem;
+            color: #cbd5e6;
+            cursor: pointer;
+            transition: all 0.25s ease;
+            font-family: inherit;
+        }
+
+        .filter-btn:hover {
+            background: #2d3a5e;
+            color: white;
+            transform: translateY(-2px);
+            border-color: #7c8db0;
+        }
+
+        .filter-btn.active {
+            background: #3b82f6;
+            color: white;
+            box-shadow: 0 6px 14px rgba(59,130,246,0.3);
+            border-color: #3b82f6;
+        }
+
+        /* responsive grid */
+        .gallery-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 1.8rem;
+            margin-bottom: 3rem;
+        }
+
+        /* gallery card item */
+        .gallery-item {
+            position: relative;
+            border-radius: 1.5rem;
+            overflow: hidden;
+            cursor: pointer;
+            aspect-ratio: 4 / 3;
+            background: #0f172a;
+            box-shadow: 0 12px 28px -8px rgba(0, 0, 0, 0.5);
+            transition: all 0.35s cubic-bezier(0.2, 0.9, 0.4, 1.1);
+            transform: scale(1);
+        }
+
+        .gallery-item:hover {
+            transform: scale(1.02) translateY(-5px);
+            box-shadow: 0 24px 40px -12px black;
+        }
+
+        .gallery-item img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.5s ease, filter 0.3s;
+            display: block;
+        }
+
+        .gallery-item:hover img {
+            transform: scale(1.08);
+            filter: brightness(1.05) contrast(1.02);
+        }
+
+        /* overlay label (category badge) */
+        .item-overlay {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: linear-gradient(0deg, rgba(0,0,0,0.7) 0%, rgba(0,0,0,0) 100%);
+            padding: 1rem 0.8rem 0.6rem;
+            text-align: left;
+            pointer-events: none;
+        }
+
+        .category-badge {
+            background: rgba(59,130,246,0.85);
+            backdrop-filter: blur(4px);
+            display: inline-block;
+            padding: 0.2rem 1rem;
+            border-radius: 30px;
+            font-size: 0.7rem;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+            color: white;
+            text-transform: uppercase;
+        }
+
+        /* LIGHTBOX MODAL (fullscreen) */
+        .lightbox {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(8, 12, 24, 0.96);
+            backdrop-filter: blur(12px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            visibility: hidden;
+            opacity: 0;
+            transition: visibility 0.25s, opacity 0.3s ease;
+            z-index: 1000;
+            flex-direction: column;
+        }
+
+        .lightbox.active {
+            visibility: visible;
+            opacity: 1;
+        }
+
+        .lightbox-content {
+            position: relative;
+            max-width: 90vw;
+            max-height: 85vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .lightbox-img {
+            max-width: 90vw;
+            max-height: 80vh;
+            object-fit: contain;
+            border-radius: 1.2rem;
+            box-shadow: 0 25px 45px rgba(0,0,0,0.6);
+            transition: transform 0.2s;
+            background: #00000055;
+        }
+
+        /* navigation buttons */
+        .nav-btn {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            background: rgba(20, 30, 55, 0.8);
+            backdrop-filter: blur(8px);
+            border: none;
+            width: 48px;
+            height: 48px;
+            border-radius: 60px;
+            font-size: 2rem;
+            font-weight: bold;
+            color: white;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1010;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+        }
+
+        .nav-btn:hover {
+            background: #3b82f6;
+            transform: translateY(-50%) scale(1.05);
+        }
+
+        .prev-btn {
+            left: 20px;
+        }
+
+        .next-btn {
+            right: 20px;
+        }
+
+        .close-lightbox {
+            position: absolute;
+            top: 24px;
+            right: 32px;
+            background: rgba(0,0,0,0.6);
+            border: none;
+            font-size: 2rem;
+            color: white;
+            cursor: pointer;
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            transition: 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            backdrop-filter: blur(4px);
+            font-weight: 300;
+        }
+
+        .close-lightbox:hover {
+            background: #ef4444;
+            transform: scale(1.05);
+        }
+
+        .lightbox-caption {
+            margin-top: 1rem;
+            text-align: center;
+            background: rgba(0,0,0,0.6);
+            padding: 0.5rem 1.2rem;
+            border-radius: 60px;
+            font-size: 0.9rem;
+            color: #f0f9ff;
+            max-width: 80%;
+        }
+
+        /* empty / no results */
+        .no-results {
+            text-align: center;
+            grid-column: 1 / -1;
+            padding: 3rem;
+            background: #1e293b60;
+            border-radius: 2rem;
+            font-size: 1.2rem;
+        }
+
+        /* responsive */
+        @media (max-width: 680px) {
+            body {
+                padding: 1rem;
+            }
+            .gallery-grid {
+                gap: 1rem;
+                grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+            }
+            .nav-btn {
+                width: 38px;
+                height: 38px;
+                font-size: 1.5rem;
+            }
+            .filter-btn {
+                padding: 0.4rem 1.2rem;
+                font-size: 0.8rem;
+            }
+        }
+
+        /* fade transition for grid items */
+        .gallery-item {
+            animation: fadeScale 0.4s ease forwards;
+        }
+
+        @keyframes fadeScale {
+            from {
+                opacity: 0;
+                transform: scale(0.94);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+
+        /* image filter simulation on hover (bonus filter effect) */
+        .gallery-item[data-filter="vintage"]:hover img,
+        .gallery-item.vintage-hover:hover img {
+            filter: sepia(0.4) contrast(1.1) brightness(0.96);
+        }
+        .gallery-item[data-filter="cool"]:hover img {
+            filter: grayscale(0.1) brightness(1.02) saturate(1.2);
+        }
+    </style>
+</head>
+<body>
+
+<div class="gallery-container">
+    <div class="gallery-header">
+        <h1>✨ AETHER GALLERY</h1>
+        <div class="sub">hover · explore · lightbox experience</div>
+        <div class="filter-bar" id="filterBar">
+            <button class="filter-btn active" data-category="all">All 📸</button>
+            <button class="filter-btn" data-category="nature">🌿 Nature</button>
+            <button class="filter-btn" data-category="urban">🏙️ Urban</button>
+            <button class="filter-btn" data-category="abstract">🎨 Abstract</button>
+            <button class="filter-btn" data-category="portrait">👤 Portrait</button>
+        </div>
+    </div>
+
+    <div class="gallery-grid" id="galleryGrid">
+        <!-- images will be injected dynamically via JS -->
+    </div>
+</div>
+
+<!-- Lightbox Modal -->
+<div id="lightbox" class="lightbox">
+    <button class="close-lightbox" id="closeLightboxBtn">✕</button>
+    <button class="nav-btn prev-btn" id="prevLightBtn">‹</button>
+    <div class="lightbox-content">
+        <img id="lightboxImage" class="lightbox-img" alt="enlarged view">
+    </div>
+    <button class="nav-btn next-btn" id="nextLightBtn">›</button>
+    <div class="lightbox-caption" id="lightboxCaption"></div>
+</div>
+
+<script>
+    // ---------- IMAGE DATASET (high-quality unsplash / curated demo with categories) ----------
+    const galleryData = [
+        { id: 1, src: "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=600&h=450&fit=crop", title: "Misty Forest", category: "nature", filterEffect: "vintage" },
+        { id: 2, src: "https://images.unsplash.com/photo-1449824913935-59a10b8d2000?w=600&h=450&fit=crop", title: "City Lights", category: "urban", filterEffect: "cool" },
+        { id: 3, src: "https://images.unsplash.com/photo-1541701494587-cb58502866ab?w=600&h=450&fit=crop", title: "Fluid Dreams", category: "abstract", filterEffect: "vintage" },
+        { id: 4, src: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=600&h=450&fit=crop", title: "Silhouette", category: "portrait", filterEffect: "cool" },
+        { id: 5, src: "https://images.unsplash.com/photo-1469474968028-56623f02e42e?w=600&h=450&fit=crop", title: "Green Valley", category: "nature", filterEffect: "vintage" },
+        { id: 6, src: "https://images.unsplash.com/photo-1480714378408-67cf0d13bc1b?w=600&h=450&fit=crop", title: "Skyscraper Flow", category: "urban", filterEffect: "cool" },
+        { id: 7, src: "https://images.unsplash.com/photo-1578301978693-85fa9c0320b9?w=600&h=450&fit=crop", title: "Geometric Harmony", category: "abstract", filterEffect: "vintage" },
+        { id: 8, src: "https://images.unsplash.com/photo-1531123897727-8f129e1688ce?w=600&h=450&fit=crop", title: "Thoughtful Gaze", category: "portrait", filterEffect: "cool" },
+        { id: 9, src: "https://images.unsplash.com/photo-1472214103451-9374bd1c798e?w=600&h=450&fit=crop", title: "Lake Serenity", category: "nature", filterEffect: "vintage" },
+        { id: 10, src: "https://images.unsplash.com/photo-1519501025264-65ba15a82390?w=600&h=450&fit=crop", title: "Neon After Dark", category: "urban", filterEffect: "cool" },
+        { id: 11, src: "https://images.unsplash.com/photo-1541701494587-cb58502866ab?w=600&h=450&fit=crop", title: "Chromatic Splash", category: "abstract", filterEffect: "vintage" },
+        { id: 12, src: "https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=600&h=450&fit=crop", title: "Mysterious Soul", category: "portrait", filterEffect: "cool" }
+    ];
+
+    // current lightbox state
+    let currentFilter = "all";
+    let activeImages = [...galleryData];
+    let currentLightboxIndex = 0;      // index inside activeImages (filtered array)
+    let currentLightboxId = null;
+    let lightboxActive = false;
+
+    // DOM elements
+    const galleryGrid = document.getElementById("galleryGrid");
+    const lightboxEl = document.getElementById("lightbox");
+    const lightboxImg = document.getElementById("lightboxImage");
+    const lightboxCaption = document.getElementById("lightboxCaption");
+    const closeLightboxBtn = document.getElementById("closeLightboxBtn");
+    const prevLightBtn = document.getElementById("prevLightBtn");
+    const nextLightBtn = document.getElementById("nextLightBtn");
+
+    // ---------- RENDER GALLERY based on active filter ----------
+    function renderGallery() {
+        if (!galleryGrid) return;
+        let filtered = galleryData.filter(item => {
+            if (currentFilter === "all") return true;
+            return item.category === currentFilter;
+        });
+        activeImages = filtered;
+
+        if (filtered.length === 0) {
+            galleryGrid.innerHTML = `<div class="no-results">🎞️ No images in this category. Try another filter ✨</div>`;
+            return;
+        }
+
+        let html = "";
+        filtered.forEach((img, idx) => {
+            // add custom data-filter attribute for hover filters (bonus)
+            const filterClass = img.filterEffect === "vintage" ? "vintage-hover" : "";
+            html += `
+                <div class="gallery-item" data-id="${img.id}" data-index="${idx}" data-category="${img.category}" data-filter="${img.filterEffect || ''}">
+                    <img src="${img.src}" alt="${img.title}" loading="lazy">
+                    <div class="item-overlay">
+                        <span class="category-badge">${img.category.toUpperCase()}</span>
+                    </div>
+                </div>
+            `;
+        });
+        galleryGrid.innerHTML = html;
+
+        // attach click event to each gallery item for lightbox
+        document.querySelectorAll('.gallery-item').forEach(item => {
+            item.addEventListener('click', (e) => {
+                // stop propagation to avoid weirdness
+                e.stopPropagation();
+                const id = parseInt(item.getAttribute('data-id'));
+                const imgIndex = activeImages.findIndex(img => img.id === id);
+                if (imgIndex !== -1) {
+                    openLightbox(imgIndex);
+                } else {
+                    // fallback: find by data-index from dataset but safer with id
+                    const fallbackIdx = parseInt(item.getAttribute('data-index'));
+                    if (!isNaN(fallbackIdx) && activeImages[fallbackIdx]) openLightbox(fallbackIdx);
+                }
+            });
+        });
+    }
+
+    // ---------- OPEN LIGHTBOX with smooth navigation ----------
+    function openLightbox(index) {
+        if (!activeImages.length) return;
+        if (index < 0) index = 0;
+        if (index >= activeImages.length) index = activeImages.length - 1;
+        currentLightboxIndex = index;
+        const imageData = activeImages[currentLightboxIndex];
+        if (!imageData) return;
+        
+        lightboxImg.src = imageData.src;
+        lightboxCaption.innerText = `${imageData.title}  •  ${imageData.category.toUpperCase()}`;
+        lightboxEl.classList.add("active");
+        lightboxActive = true;
+        document.body.style.overflow = "hidden"; // prevent scroll behind modal
+    }
+
+    function closeLightbox() {
+        lightboxEl.classList.remove("active");
+        lightboxActive = false;
+        document.body.style.overflow = "";
+    }
+
+    function nextImage() {
+        if (!activeImages.length) return;
+        let newIndex = currentLightboxIndex + 1;
+        if (newIndex >= activeImages.length) newIndex = 0;   // loop
+        currentLightboxIndex = newIndex;
+        const imgData = activeImages[currentLightboxIndex];
+        if (imgData) {
+            lightboxImg.src = imgData.src;
+            lightboxCaption.innerText = `${imgData.title}  •  ${imgData.category.toUpperCase()}`;
+        }
+    }
+
+    function prevImage() {
+        if (!activeImages.length) return;
+        let newIndex = currentLightboxIndex - 1;
+        if (newIndex < 0) newIndex = activeImages.length - 1;
+        currentLightboxIndex = newIndex;
+        const imgData = activeImages[currentLightboxIndex];
+        if (imgData) {
+            lightboxImg.src = imgData.src;
+            lightboxCaption.innerText = `${imgData.title}  •  ${imgData.category.toUpperCase()}`;
+        }
+    }
+
+    // Keyboard support for lightbox (bonus)
+    function onKeyDownHandler(e) {
+        if (!lightboxActive) return;
+        switch(e.key) {
+            case 'ArrowRight':
+                e.preventDefault();
+                nextImage();
+                break;
+            case 'ArrowLeft':
+                e.preventDefault();
+                prevImage();
+                break;
+            case 'Escape':
+                e.preventDefault();
+                closeLightbox();
+                break;
+        }
+    }
+
+    // filter logic with smooth transition + re-render
+    function setFilter(category) {
+        currentFilter = category;
+        renderGallery();
+
+        // update active class on filter buttons
+        document.querySelectorAll('.filter-btn').forEach(btn => {
+            const btnCat = btn.getAttribute('data-category');
+            if (btnCat === category) {
+                btn.classList.add('active');
+            } else {
+                btn.classList.remove('active');
+            }
+        });
+    }
+
+    // bonus hover filter effect: apply extra dynamic filters on gallery items (CSS already does via hover)
+    // Additional bonus: the gallery also has CSS filters per hover based on data-filter, I've added extra dynamic class
+
+    // ------ add event listeners for filter bar ------
+    const filterBtns = document.querySelectorAll('.filter-btn');
+    filterBtns.forEach(btn => {
+        btn.addEventListener('click', () => {
+            const category = btn.getAttribute('data-category');
+            setFilter(category);
+        });
+    });
+
+    // Lightbox controls
+    closeLightboxBtn.addEventListener('click', closeLightbox);
+    prevLightBtn.addEventListener('click', prevImage);
+    nextLightBtn.addEventListener('click', nextImage);
+    // optional click on backdrop to close
+    lightboxEl.addEventListener('click', (e) => {
+        if (e.target === lightboxEl) closeLightbox();
+    });
+    window.addEventListener('keydown', onKeyDownHandler);
+
+    // additional: if user clicks on lightbox image stop propagation to avoid accidental closure
+    lightboxImg.addEventListener('click', (e) => e.stopPropagation());
+
+    // init gallery
+    renderGallery();
+
+    // bonus: add smooth transitions resize safe
+    let resizeTimer;
+    window.addEventListener('resize', () => {
+        if (lightboxActive) {
+            // keep image centered; nothing else needed
+        }
+    });
+
+    // Hover effect refinements: already in CSS, plus each gallery item respects filter-effect on hover
+    // Adding micro interaction for category transition
+    console.log("✨ Gallery ready — use next/prev, keyboard (← → ESC), and category filters!");
+</script>
+
+</body>
+</html>
