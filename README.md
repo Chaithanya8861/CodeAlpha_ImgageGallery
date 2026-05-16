@@ -6,11 +6,11 @@ cat > README.md << 'EOF'
 
 An interactive, modern image gallery web application featuring a cinematic lightbox view, dynamic category filtering, smooth animations, and full keyboard support.
 
-![Project Demo](https://images.unsplash.com/photo-1514525253161-7a46d19cd819?w=800&h=400&fit=crop)
+![Project Demo]( https://chaithanya8861.github.io/CodeAlpha_ImgageGallery/)
 
 ## 🌟 Live Demo
 
-Experience the gallery live right here: **[https://chaithanya8861.github.io/CodeAlpha_ImgageGallery/](https://chaithanya8861.github.io/CodeAlpha_ImgageGallery/)**
+Experience the gallery live right here: **[https://chaithanya8861.github.io/CodeAlpha_ImgageGallery/]( https://chaithanya8861.github.io/CodeAlpha_ImgageGallery/)**
 
 ## ✨ Key Features
 
