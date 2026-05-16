@@ -10,7 +10,7 @@ An interactive, modern image gallery web application featuring a cinematic light
 
 ## 🌟 Live Demo
 
-Experience the gallery live right here: **[https://chaithanya8861.github.io/CodeAlpha_ImgageGallery/](https://chaithanya8861.github.io/CodeAlpha_ImgageGallery/)**
+Experience the gallery live right here: (https://chaithanya8861.github.io/CodeAlpha_ImgageGallery/)
 
 ## ✨ Key Features
 
