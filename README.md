@@ -10,7 +10,7 @@ An interactive, modern image gallery web application featuring a cinematic light
 
 ## 🌟 Live Demo
 
-Experience the gallery live right here: (https://chaithanya8861.github.io/CodeAlpha_ImgageGallery/)
+Experience the gallery live right here: **[https://chaithanya8861.github.io/CodeAlpha_ImgageGallery/](https://chaithanya8861.github.io/CodeAlpha_ImgageGallery/)**
 
 ## ✨ Key Features
 
@@ -34,5 +34,4 @@ Experience the gallery live right here: (https://chaithanya8861.github.io/CodeAl
 3.  **Open Lightbox** – Click on any image to open it in the full-screen lightbox viewer.
 4.  **Navigate** – Within the lightbox, click the **‹** and **›** buttons or use your keyboard's **left** and **right** arrow keys.
 5.  **Close Lightbox** – Click the **✕ (X)** button, click outside the image, or press the **`ESC`** key.
-
 
